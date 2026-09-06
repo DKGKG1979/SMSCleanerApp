@@ -22,7 +22,9 @@ data class SmsItem(val id: Long, val address: String, val date: Long, val body: 
 
 class MainActivity : AppCompatActivity() {
 
-    private val FILTER_TEXT = "Nadawca SMSa"
+    private val FILTER_TEXT_1 = "Nadawca SMSa"
+    private val FILTER_TEXT_2 = "Jesli nie chcesz takich powiadomien, wyslij N na numer 8023"
+    
     private val matchedSmsList = mutableListOf<SmsItem>()
 
     private lateinit var tvStatus: TextView
@@ -80,15 +82,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Odpowiednik: content query --uri content://sms --projection _id:address:date:body | findstr /I /C:"Nadawca SMSa"
     private fun scanSms() {
         matchedSmsList.clear()
         val uri = Uri.parse("content://sms")
         val projection = arrayOf("_id", "address", "date", "body")
         
-        // Zapytanie z filtracją LIKE po stornie bazy danych
-        val selection = "body LIKE ?"
-        val selectionArgs = arrayOf("%$FILTER_TEXT%")
+        val selection = "body LIKE ? OR body LIKE ?"
+        val selectionArgs = arrayOf("%$FILTER_TEXT_1%", "%$FILTER_TEXT_2%")
 
         val cursor = contentResolver.query(uri, projection, selection, selectionArgs, "date DESC")
 
@@ -113,12 +113,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Odpowiednik find /C /V "" (zliczenie)
         tvStatus.text = "Znaleziono wiadomości: ${matchedSmsList.size}"
         tvResults.text = sb.toString()
     }
 
-    // Odpowiednik: ... > sms_do_usuniecia.txt
     private fun saveToFile() {
         if (matchedSmsList.isEmpty()) {
             Toast.makeText(this, "Brak danych do zapisu. Wykonaj najpierw skanowanie.", Toast.LENGTH_SHORT).show()
@@ -154,8 +152,9 @@ class MainActivity : AppCompatActivity() {
             val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_SMS)
             roleRequestLauncher.launch(intent)
         } else {
-            val intent = Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT_SMS)
-            intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, packageName)
+            val intent = Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT_SMS).apply {
+                putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, packageName)
+            }
             roleRequestLauncher.launch(intent)
         }
     }
@@ -169,11 +168,9 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // Odpowiednik: content delete --uri content://sms --where "body LIKE '%Nadawca SMSa%'"
     private fun deleteSms() {
         var deletedCount = 0
 
-        // Usuwanie pojedynczych wiadomości po _id, aby nie skasować całych wątków
         for (sms in matchedSmsList) {
             val deleteUri = Uri.parse("content://sms/${sms.id}")
             val rows = contentResolver.delete(deleteUri, null, null)
