@@ -1,11 +1,11 @@
 package com.example.smscleaner
-import android.app.Service
-import android.content.Intent
-import android.os.IBinder
-import androidx.appcompat.app.AppCompatActivity
 
-class ComposeSmsActivity : AppCompatActivity()
+import android.app.Activity
+import android.os.Bundle
 
-class HeadlessSmsSendService : Service() {
-    override fun onBind(intent: Intent?): IBinder? = null
+class ComposeSmsActivity : Activity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        finish()
+    }
 }
