@@ -1,0 +1,2 @@
+rootProject.name = "SMSCleaner"
+include ':app'
