@@ -152,9 +152,8 @@ class MainActivity : AppCompatActivity() {
             val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_SMS)
             roleRequestLauncher.launch(intent)
         } else {
-            val intent = Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT_SMS).apply {
-                putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, packageName)
-            }
+            val intent = Intent("android.provider.Telephony.ACTION_CHANGE_DEFAULT_SMS")
+            intent.putExtra("package", packageName)
             roleRequestLauncher.launch(intent)
         }
     }
